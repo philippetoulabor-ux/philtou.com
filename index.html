@@ -13,11 +13,14 @@
 
     body {
       background: #fff;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: system-ui, sans-serif;
       min-height: 100vh;
     }
 
     header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       text-align: center;
       padding: 2rem 1rem;
     }
@@ -29,20 +32,75 @@
 
     nav {
       display: flex;
+      flex-direction: row;
+      align-items: flex-start;
       justify-content: center;
-      gap: 1.5rem;
+      flex-wrap: wrap;
+      gap: 2rem;
+      width: 100%;
       margin-top: 1rem;
-      font-size: 1rem;
     }
 
-    nav a {
+    .project-thumb {
       color: inherit;
-      text-decoration: underline;
-      text-underline-offset: 0.2em;
+      text-decoration: none;
     }
 
-    nav a:hover {
-      opacity: 0.7;
+    .project-thumb:hover .thumbinner {
+      border-color: #a2a9b1;
+    }
+
+    .thumb {
+      margin: 0;
+    }
+
+    .thumbinner {
+      border: 1px solid #c8ccd1;
+      background: #f8f9fa;
+      padding: 3px;
+      display: inline-block;
+      text-align: center;
+      font-size: 94%;
+      width: fit-content;
+      max-width: 220px;
+    }
+
+    .thumbinner:has(.thumbimage img) {
+      width: 220px;
+    }
+
+    .thumbimage {
+      display: block;
+      background: #eaecf0;
+      line-height: 0;
+      overflow: hidden;
+    }
+
+    .thumbimage img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .thumbimage--emoji {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      line-height: 1;
+      background: transparent;
+    }
+
+    .thumbimage--emoji .thumb-emoji {
+      font-size: 4.5rem;
+      line-height: 1;
+    }
+
+    .thumbcaption {
+      text-align: left;
+      padding: 3px;
+      line-height: 1.4;
+      color: #202122;
     }
   </style>
 </head>
@@ -50,8 +108,26 @@
   <header>
     <h1>phil</h1>
     <nav aria-label="Projekte">
-      <a href="/home">Home</a>
-      <a href="/archive">Archive</a>
+      <a href="/home" class="project-thumb">
+        <figure class="thumb">
+          <div class="thumbinner">
+            <span class="thumbimage">
+              <img src="/previews/home.webp" alt="" />
+            </span>
+            <figcaption class="thumbcaption">Home</figcaption>
+          </div>
+        </figure>
+      </a>
+      <a href="/archive" class="project-thumb">
+        <figure class="thumb">
+          <div class="thumbinner">
+            <span class="thumbimage thumbimage--emoji" aria-hidden="true">
+              <span class="thumb-emoji">📁</span>
+            </span>
+            <figcaption class="thumbcaption">Archive</figcaption>
+          </div>
+        </figure>
+      </a>
     </nav>
   </header>
 </body>

@@ -6,7 +6,7 @@ import { buildHomeDist } from "./build-home-dist.mjs";
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 console.log("Building apps/home…");
-buildHomeDist();
+buildHomeDist({ copyLanding: true });
 
 try {
   console.log("Syncing archive web assets…");

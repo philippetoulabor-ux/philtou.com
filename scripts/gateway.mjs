@@ -18,6 +18,7 @@ const archiveUrl = process.env.ARCHIVE_URL || "http://127.0.0.1:3001";
 const indexFile = join(root, "index.html");
 const distIndex = join(root, "dist", "index.html");
 const homeDir = join(root, "dist", "home");
+const previewsDir = join(root, "previews");
 
 const MIME = {
   ".html": "text/html; charset=utf-8",
@@ -41,13 +42,17 @@ function send(res, status, body, type = "text/plain; charset=utf-8") {
   res.end(body);
 }
 
-function serveFile(res, filePath) {
+function serveFile(res, filePath, { noCache = false } = {}) {
   if (!existsSync(filePath) || !statSync(filePath).isFile()) {
     send(res, 404, "Not found");
     return;
   }
   const type = MIME[extname(filePath)] || "application/octet-stream";
-  res.writeHead(200, { "Content-Type": type });
+  const headers = { "Content-Type": type };
+  if (noCache) {
+    headers["Cache-Control"] = "no-store";
+  }
+  res.writeHead(200, headers);
   createReadStream(filePath).pipe(res);
 }
 
@@ -77,6 +82,21 @@ function serveHome(res, urlPath) {
     return;
   }
   send(res, 404, "Not found");
+}
+
+function servePreviews(res, urlPath) {
+  const rel = urlPath.replace(/^\/previews\/?/, "");
+  if (!rel) {
+    send(res, 404, "Not found");
+    return;
+  }
+  const base = normalize(previewsDir);
+  const safe = normalize(join(previewsDir, rel));
+  if (!safe.startsWith(base)) {
+    send(res, 403, "Forbidden");
+    return;
+  }
+  serveFile(res, safe);
 }
 
 function proxy(req, res, targetBase) {
@@ -112,12 +132,13 @@ function route(req, res) {
   const url = req.url?.split("?")[0] ?? "/";
 
   if (url === "/" || url === "/index.html") {
-    if (existsSync(distIndex)) {
-      serveFile(res, distIndex);
+    // Root index.html is source of truth during dev; dist/ is a build snapshot.
+    if (existsSync(indexFile)) {
+      serveFile(res, indexFile, { noCache: true });
       return;
     }
-    if (existsSync(indexFile)) {
-      serveFile(res, indexFile);
+    if (existsSync(distIndex)) {
+      serveFile(res, distIndex, { noCache: true });
       return;
     }
     send(res, 404, "index.html missing");
@@ -126,6 +147,11 @@ function route(req, res) {
 
   if (url === "/home" || url.startsWith("/home/")) {
     serveHome(res, url);
+    return;
+  }
+
+  if (url.startsWith("/previews/")) {
+    servePreviews(res, url);
     return;
   }
 
