@@ -1,0 +1,15 @@
+{
+  "name": "philtou.com",
+  "private": true,
+  "scripts": {
+    "setup": "node scripts/setup.mjs",
+    "predev": "node scripts/ensure-assets.mjs",
+    "dev": "node scripts/dev.mjs",
+    "dev:home": "npm run dev --prefix apps/home",
+    "build": "node scripts/build-all.mjs",
+    "preview": "npm run build && node scripts/preview.mjs"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
