@@ -31,6 +31,7 @@ const MIME = {
   ".webp": "image/webp",
   ".svg": "image/svg+xml",
   ".glb": "model/gltf-binary",
+  ".stl": "model/stl",
   ".ico": "image/x-icon",
   ".woff2": "font/woff2",
 };
@@ -128,6 +129,7 @@ function route(req, res) {
     url === "/archive" ||
     url.startsWith("/archive/") ||
     url.startsWith("/web/") ||
+    url.startsWith("/webdata3d/") ||
     url === "/pdf.worker.min.mjs" ||
     url.startsWith("/_next/")
   ) {
