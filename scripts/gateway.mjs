@@ -95,6 +95,10 @@ function proxy(req, res, targetBase) {
     }
   );
   proxyReq.on("error", (err) => {
+    if (res.headersSent) {
+      res.destroy();
+      return;
+    }
     send(
       res,
       502,
