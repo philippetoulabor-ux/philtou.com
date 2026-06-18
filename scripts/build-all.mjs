@@ -12,13 +12,6 @@ buildHomeDist({ copyLanding: true });
 console.log("Building apps/ar-archive…");
 buildArArchiveDist();
 
-try {
-  console.log("Syncing archive web assets…");
-  execSync("npm run sync:web", { cwd: join(root, "apps/archive"), stdio: "inherit" });
-} catch {
-  console.warn("sync:web skipped — ensure public/web exists in apps/archive");
-}
-
 console.log("Building apps/archive…");
 execSync("npm run build", {
   cwd: join(root, "apps/archive"),
