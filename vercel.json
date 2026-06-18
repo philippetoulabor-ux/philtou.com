@@ -1,6 +1,7 @@
 {
   "buildCommand": "node scripts/setup.mjs && npm run build",
   "installCommand": "npm install",
+  "outputDirectory": "dist",
   "headers": [
     {
       "source": "/ar-archive/models/(.*)\\.usdz",

@@ -23,11 +23,6 @@ cpSync(join(archive, ".next/static"), join(appDir, ".next/static"), {
   recursive: true,
 });
 
-const databaseArchive = join(archive, "database-archive");
-if (existsSync(databaseArchive)) {
-  cpSync(databaseArchive, join(appDir, "database-archive"), { recursive: true });
-}
-
 const server = join(appDir, "server.js");
 console.log("Standalone bundle ready.");
 console.log(`  node ${server}`);
