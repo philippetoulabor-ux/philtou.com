@@ -14,4 +14,7 @@ execSync("npm install", { cwd: join(root, "apps/home"), stdio: "inherit" });
 console.log("Installing apps/archive…");
 execSync("npm install", { cwd: join(root, "apps/archive"), stdio: "inherit" });
 
+console.log("Installing apps/ar-archive…");
+execSync("npm install", { cwd: join(root, "apps/ar-archive"), stdio: "inherit" });
+
 console.log("Setup complete. Run: npm run dev");

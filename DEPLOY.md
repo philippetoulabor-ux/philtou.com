@@ -1,12 +1,13 @@
 # philtou.com
 
-Drei getrennte Teile unter einem Gateway:
+Vier getrennte Teile unter einem Gateway:
 
 | Teil | Repo-Pfad | URL |
 |------|-----------|-----|
 | Landing | [index.html](index.html) | `/` |
 | Home | [apps/home/](apps/home/) Submodule | `/home` |
 | Archive | [apps/archive/](apps/archive/) Submodule | `/archive` |
+| AR Archive | [apps/ar-archive/](apps/ar-archive/) Submodule | `/ar-archive` |
 
 ## Assets über Git (Submodule-Workflow)
 
@@ -14,6 +15,7 @@ Medien liegen **in den Submodule-Repos**, nicht auf dem Desktop:
 
 - **Archive:** `apps/archive/public/web/` → Repo [middleman.digital](https://github.com/philippetoulabor-ux/middleman.digital)
 - **Home:** `apps/home/public/home-transformed.glb`, `public/lightmaps/` → Repo [home](https://github.com/philippetoulabor-ux/home)
+- **AR Archive:** `apps/ar-archive/public/models/` → Repo [ar-archive](https://github.com/philippetoulabor-ux/ar-archive)
 
 ### Erstes Setup / neuer Clone
 
@@ -46,7 +48,7 @@ git add apps/archive
 git commit -m "Update archive submodule"
 ```
 
-Gleiches Muster für `apps/home`.
+Gleiches Muster für `apps/home` und `apps/ar-archive`.
 
 ## Im Browser testen
 
@@ -61,9 +63,33 @@ npm run dev
 | 3000 | Gateway |
 | 3001 | Archive (Next.js, intern) |
 
-`/home` kommt statisch aus `dist/home/` (wird bei `dev` gebaut).
+`/home` und `/ar-archive` kommen statisch aus `dist/home/` bzw. `dist/ar-archive/` (werden bei `dev` gebaut).
 
 Home mit Hot-Reload: `npm run dev:home` → http://localhost:5173/home/
+
+AR Archive mit Hot-Reload (HTTPS): `npm run dev:ar-archive`
+
+### iPhone im WLAN (ohne Deploy)
+
+Mac und iPhone im **gleichen WLAN**, dann:
+
+```bash
+npm run dev
+# oder: npm run dev:lan
+```
+
+In der Konsole erscheint eine Zeile wie:
+
+```
+iPhone (gleiches WLAN): http://192.168.x.x:3000
+```
+
+Diese URL in Safari auf dem iPhone öffnen — Landing, Home, Archive und AR Archive sind erreichbar.
+
+**Hinweise:**
+- macOS-Firewall kann Port 3000 blockieren (Systemeinstellungen → Netzwerk → Firewall)
+- Gast-WLAN isoliert Geräte oft voneinander
+- Kamera/Quick Look in AR Archive brauchen HTTPS (Tunnel oder Preview-Deploy); für alles andere reicht HTTP im WLAN
 
 ## Build & Preview
 

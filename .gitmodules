@@ -1,6 +1,9 @@
 [submodule "apps/home"]
 	path = apps/home
 	url = https://github.com/philippetoulabor-ux/home.git
+[submodule "apps/ar-archive"]
+	path = apps/ar-archive
+	url = https://github.com/philippetoulabor-ux/ar-archive.git
 [submodule "apps/archive"]
 	path = apps/archive
-	url = https://github.com/philippetoulabor-ux/middleman.digital.git
+	url = https://github.com/philippetoulabor-ux/archive.git

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Gateway :3000 — index.html, dist/home, archive proxy.
+ * Gateway :3000 — index.html, dist/home, dist/ar-archive, archive proxy.
  */
 import {
   createReadStream,
@@ -10,6 +10,7 @@ import {
 import http from "node:http";
 import { dirname, extname, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
+import { formatLanUrls } from "./lan-address.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const port = Number(process.env.GATEWAY_PORT) || 3000;
@@ -18,6 +19,7 @@ const archiveUrl = process.env.ARCHIVE_URL || "http://127.0.0.1:3001";
 const indexFile = join(root, "index.html");
 const distIndex = join(root, "dist", "index.html");
 const homeDir = join(root, "dist", "home");
+const arArchiveDir = join(root, "dist", "ar-archive");
 const previewsDir = join(root, "previews");
 
 const MIME = {
@@ -32,6 +34,7 @@ const MIME = {
   ".webp": "image/webp",
   ".svg": "image/svg+xml",
   ".glb": "model/gltf-binary",
+  ".usdz": "model/vnd.usdz+zip",
   ".stl": "model/stl",
   ".ico": "image/x-icon",
   ".woff2": "font/woff2",
@@ -49,6 +52,9 @@ function serveFile(res, filePath, { noCache = false } = {}) {
   }
   const type = MIME[extname(filePath)] || "application/octet-stream";
   const headers = { "Content-Type": type };
+  if (extname(filePath) === ".usdz") {
+    headers["Content-Disposition"] = 'inline; filename="model.usdz"';
+  }
   if (noCache) {
     headers["Cache-Control"] = "no-store";
   }
@@ -56,18 +62,18 @@ function serveFile(res, filePath, { noCache = false } = {}) {
   createReadStream(filePath).pipe(res);
 }
 
-function serveHome(res, urlPath) {
-  if (!existsSync(homeDir)) {
+function serveStaticApp(res, urlPath, appDir, prefix, buildScript) {
+  if (!existsSync(appDir)) {
     send(
       res,
       503,
-      "Home not built. Run: npm run dev  (or: node scripts/build-home-dist.mjs)"
+      `${prefix} not built. Run: npm run dev  (or: node scripts/${buildScript})`
     );
     return;
   }
-  const rel = urlPath.replace(/^\/home\/?/, "") || "index.html";
-  const base = normalize(homeDir);
-  const safe = normalize(join(homeDir, rel));
+  const rel = urlPath.replace(new RegExp(`^${prefix}\\/?`), "") || "index.html";
+  const base = normalize(appDir);
+  const safe = normalize(join(appDir, rel));
   if (!safe.startsWith(base)) {
     send(res, 403, "Forbidden");
     return;
@@ -76,12 +82,26 @@ function serveHome(res, urlPath) {
     serveFile(res, safe);
     return;
   }
-  const index = join(homeDir, "index.html");
+  const index = join(appDir, "index.html");
   if (existsSync(index)) {
     serveFile(res, index);
     return;
   }
   send(res, 404, "Not found");
+}
+
+function serveHome(res, urlPath) {
+  serveStaticApp(res, urlPath, homeDir, "/home", "build-home-dist.mjs");
+}
+
+function serveArArchive(res, urlPath) {
+  serveStaticApp(
+    res,
+    urlPath,
+    arArchiveDir,
+    "/ar-archive",
+    "build-ar-archive-dist.mjs"
+  );
 }
 
 function servePreviews(res, urlPath) {
@@ -150,6 +170,11 @@ function route(req, res) {
     return;
   }
 
+  if (url === "/ar-archive" || url.startsWith("/ar-archive/")) {
+    serveArArchive(res, url);
+    return;
+  }
+
   if (url.startsWith("/previews/")) {
     servePreviews(res, url);
     return;
@@ -160,6 +185,8 @@ function route(req, res) {
     url.startsWith("/archive/") ||
     url.startsWith("/web/") ||
     url.startsWith("/webdata3d/") ||
+    url.startsWith("/database-archive/") ||
+    url.startsWith("/database-archive-thumbs/") ||
     url === "/pdf.worker.min.mjs" ||
     url.startsWith("/_next/")
   ) {
@@ -170,6 +197,10 @@ function route(req, res) {
   send(res, 404, "Not found");
 }
 
-http.createServer(route).listen(port, () => {
+http.createServer(route).listen(port, "0.0.0.0", () => {
   console.log(`Gateway http://localhost:${port}`);
+  const lan = formatLanUrls(port);
+  if (lan.length > 0) {
+    console.log(`  iPhone (WLAN): ${lan.join(", ")}`);
+  }
 });

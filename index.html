@@ -58,19 +58,18 @@
       border: 1px solid #c8ccd1;
       background: #f8f9fa;
       padding: 3px;
-      display: inline-block;
+      display: inline-flex;
+      flex-direction: column;
       text-align: center;
       font-size: 94%;
-      width: fit-content;
-      max-width: 220px;
-    }
-
-    .thumbinner:has(.thumbimage img) {
-      width: 220px;
+      width: 440px;
+      max-width: 440px;
+      min-height: 300px;
     }
 
     .thumbimage {
       display: block;
+      flex: 1;
       background: transparent;
       line-height: 0;
       overflow: hidden;
@@ -79,7 +78,9 @@
     .thumbimage img {
       display: block;
       width: 100%;
-      height: auto;
+      height: 100%;
+      object-fit: cover;
+      object-position: top center;
     }
 
     .thumbimage--emoji {
@@ -125,6 +126,16 @@
               <span class="thumb-emoji">📁</span>
             </span>
             <figcaption class="thumbcaption">Archive</figcaption>
+          </div>
+        </figure>
+      </a>
+      <a href="/ar-archive" class="project-thumb" target="_blank" rel="noopener noreferrer">
+        <figure class="thumb">
+          <div class="thumbinner">
+            <span class="thumbimage thumbimage--emoji" aria-hidden="true">
+              <span class="thumb-emoji">📱</span>
+            </span>
+            <figcaption class="thumbcaption">AR Archive</figcaption>
           </div>
         </figure>
       </a>

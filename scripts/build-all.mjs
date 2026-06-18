@@ -2,11 +2,15 @@ import { execSync } from "node:child_process";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { buildHomeDist } from "./build-home-dist.mjs";
+import { buildArArchiveDist } from "./build-ar-archive-dist.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 console.log("Building apps/home…");
 buildHomeDist({ copyLanding: true });
+
+console.log("Building apps/ar-archive…");
+buildArArchiveDist();
 
 try {
   console.log("Syncing archive web assets…");

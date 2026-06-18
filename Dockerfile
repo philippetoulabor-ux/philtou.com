@@ -6,9 +6,11 @@ COPY previews ./previews
 COPY scripts ./scripts
 COPY apps/home/package.json apps/home/package-lock.json ./apps/home/
 COPY apps/archive/package.json apps/archive/package-lock.json ./apps/archive/
-RUN npm install && npm install --prefix apps/home && npm install --prefix apps/archive
+COPY apps/ar-archive/package.json apps/ar-archive/package-lock.json ./apps/ar-archive/
+RUN npm install && npm install --prefix apps/home && npm install --prefix apps/archive && npm install --prefix apps/ar-archive
 COPY apps/home ./apps/home
 COPY apps/archive ./apps/archive
+COPY apps/ar-archive ./apps/ar-archive
 RUN npm run build
 
 FROM node:20-alpine AS runner

@@ -4,7 +4,7 @@
  * Fallback: rsync von Desktop nur wenn public/web/buttons fehlt.
  */
 import { execSync } from "node:child_process";
-import { existsSync, readdirSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { buildHomeDist } from "./build-home-dist.mjs";
@@ -17,14 +17,33 @@ function warn(msg) {
   warnings++;
 }
 
-const webDest = join(root, "apps/archive/public/web");
+const archiveDir = join(root, "apps/archive");
+const databaseArchive = join(archiveDir, "database-archive");
+const webDest = join(archiveDir, "public/web");
 const buttonsDir = join(webDest, "buttons");
 
-function webAssetsOk() {
+function archiveAssetsOk() {
+  if (existsSync(databaseArchive) && readdirSync(databaseArchive).length > 0) {
+    return true;
+  }
   return existsSync(buttonsDir) && readdirSync(buttonsDir).length > 0;
 }
 
-if (!webAssetsOk()) {
+function runArchiveAssetScript() {
+  const pkgPath = join(archiveDir, "package.json");
+  if (!existsSync(pkgPath)) return;
+  const scripts = JSON.parse(readFileSync(pkgPath, "utf8")).scripts ?? {};
+  if (scripts["generate-thumbnails"]) {
+    execSync("npm run generate-thumbnails", {
+      cwd: archiveDir,
+      stdio: "inherit",
+    });
+  } else if (scripts["manifest:web"]) {
+    execSync("npm run manifest:web", { cwd: archiveDir, stdio: "inherit" });
+  }
+}
+
+if (!archiveAssetsOk()) {
   const fallback = join(
     process.env.HOME ?? "",
     "Desktop",
@@ -38,17 +57,14 @@ if (!webAssetsOk()) {
       `rsync -a "${fallback}/" "${webDest}/"`,
       { stdio: "inherit" }
     );
-    execSync("npm run manifest:web", {
-      cwd: join(root, "apps/archive"),
-      stdio: "inherit",
-    });
+    runArchiveAssetScript();
   } else {
     warn(
       "Archive-Assets fehlen (public/web/buttons).\n  git submodule update --init --recursive\n  oder Desktop-Klon nach apps/archive/public/web/ rsyncen."
     );
   }
 } else {
-  console.log("Archive web assets OK (Submodule).");
+  console.log("Archive assets OK (Submodule).");
 }
 
 const glb = join(root, "apps/home/public/home-transformed.glb");
@@ -59,6 +75,18 @@ if (!existsSync(glb)) {
 }
 if (!existsSync(atlas)) {
   warn("Lightmap fehlt — git submodule update oder bake-lightmap.");
+}
+
+const arArchiveDir = join(root, "apps/ar-archive");
+if (existsSync(join(arArchiveDir, "package.json"))) {
+  try {
+    execSync("npm run verify", { cwd: arArchiveDir, stdio: "inherit" });
+    console.log("AR Archive assets OK (Submodule).");
+  } catch {
+    warn(
+      "AR-Archive-Assets fehlen.\n  git submodule update --init --recursive"
+    );
+  }
 }
 
 console.log("Building home → dist/home…");

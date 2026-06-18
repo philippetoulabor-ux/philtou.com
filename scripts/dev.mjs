@@ -4,6 +4,8 @@ import { spawn } from "node:child_process";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { buildHomeDist } from "./build-home-dist.mjs";
+import { buildArArchiveDist } from "./build-ar-archive-dist.mjs";
+import { formatLanUrls } from "./lan-address.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -29,6 +31,9 @@ function waitForPort(port, host = "127.0.0.1", timeoutMs = 90_000) {
 
 console.log("Building home → dist/home…");
 buildHomeDist();
+
+console.log("Building ar-archive → dist/ar-archive…");
+buildArArchiveDist();
 
 const procs = [];
 
@@ -72,7 +77,13 @@ gateway.on("exit", (code, sig) => {
 });
 procs.push(gateway);
 
-console.log("\nOpen http://localhost:3000\n");
+console.log("\nOpen http://localhost:3000");
+const lan = formatLanUrls(3000);
+if (lan.length > 0) {
+  console.log(`iPhone (gleiches WLAN): ${lan[0]}`);
+}
+console.log("");
 console.log("  /        → index.html");
-console.log("  /home    → dist/home (static)");
-console.log("  /archive → Next.js :3001\n");
+console.log("  /home        → dist/home (static)");
+console.log("  /ar-archive  → dist/ar-archive (static)");
+console.log("  /archive     → Next.js :3001\n");
