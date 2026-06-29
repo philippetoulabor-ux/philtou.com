@@ -3,12 +3,11 @@
   "installCommand": "npm install",
   "outputDirectory": "dist",
   "rewrites": [
-    { "source": "/api/chat", "destination": "/apps/worlding/api/chat" },
     { "source": "/worlding", "destination": "/worlding/index.html" },
     { "source": "/worlding/(.*)", "destination": "/worlding/$1" }
   ],
   "functions": {
-    "apps/worlding/api/chat.py": {
+    "api/chat.py": {
       "maxDuration": 30,
       "includeFiles": "{apps/worlding/backend/**,apps/worlding/frontend/data.json,apps/worlding/frontend/rag_index.json}"
     }
