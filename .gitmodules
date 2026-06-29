@@ -7,3 +7,6 @@
 [submodule "apps/archive"]
 	path = apps/archive
 	url = https://github.com/philippetoulabor-ux/archive.git
+[submodule "apps/worlding"]
+	path = apps/worlding
+	url = https://github.com/philippetoulabor-ux/worlding.git

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Gateway :3000 — index.html, dist/home, dist/ar-archive, archive proxy.
+ * Gateway :3000 — index.html, dist/home, dist/ar-archive, dist/worlding, archive proxy.
  */
 import {
   createReadStream,
@@ -20,7 +20,10 @@ const indexFile = join(root, "index.html");
 const distIndex = join(root, "dist", "index.html");
 const homeDir = join(root, "dist", "home");
 const arArchiveDir = join(root, "dist", "ar-archive");
+const worldingDir = join(root, "dist", "worlding");
 const previewsDir = join(root, "previews");
+const worldingChatUrl =
+  process.env.WORLDING_CHAT_URL || "http://127.0.0.1:8080";
 
 const MIME = {
   ".html": "text/html; charset=utf-8",
@@ -104,6 +107,10 @@ function serveArArchive(res, urlPath) {
   );
 }
 
+function serveWorlding(res, urlPath) {
+  serveStaticApp(res, urlPath, worldingDir, "/worlding", "build-worlding-dist.mjs");
+}
+
 function servePreviews(res, urlPath) {
   const rel = urlPath.replace(/^\/previews\/?/, "");
   if (!rel) {
@@ -172,6 +179,16 @@ function route(req, res) {
 
   if (url === "/ar-archive" || url.startsWith("/ar-archive/")) {
     serveArArchive(res, url);
+    return;
+  }
+
+  if (url === "/worlding" || url.startsWith("/worlding/")) {
+    serveWorlding(res, url);
+    return;
+  }
+
+  if (url === "/api/chat") {
+    proxy(req, res, worldingChatUrl);
     return;
   }
 

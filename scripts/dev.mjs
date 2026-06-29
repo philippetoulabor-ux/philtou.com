@@ -5,6 +5,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { buildHomeDist } from "./build-home-dist.mjs";
 import { buildArArchiveDist } from "./build-ar-archive-dist.mjs";
+import { buildWorldingDist } from "./build-worlding-dist.mjs";
 import { formatLanUrls } from "./lan-address.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -34,6 +35,9 @@ buildHomeDist();
 
 console.log("Building ar-archive → dist/ar-archive…");
 buildArArchiveDist();
+
+console.log("Building worlding → dist/worlding…");
+buildWorldingDist();
 
 const procs = [];
 
@@ -86,4 +90,6 @@ console.log("");
 console.log("  /        → index.html");
 console.log("  /home        → dist/home (static)");
 console.log("  /ar-archive  → dist/ar-archive (static)");
-console.log("  /archive     → Next.js :3001\n");
+console.log("  /worlding    → dist/worlding (static)");
+console.log("  /archive     → Next.js :3001");
+console.log("  /api/chat    → proxy (WORLDING_CHAT_URL, default :8080)\n");

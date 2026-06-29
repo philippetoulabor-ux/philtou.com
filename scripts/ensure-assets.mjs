@@ -77,6 +77,11 @@ if (!existsSync(atlas)) {
   warn("Lightmap fehlt — git submodule update oder bake-lightmap.");
 }
 
+const worldingData = join(root, "apps/worlding/frontend/data.json");
+if (!existsSync(worldingData)) {
+  warn("Worlding data.json fehlt — git submodule update --init apps/worlding");
+}
+
 const arArchiveDir = join(root, "apps/ar-archive");
 if (existsSync(join(arArchiveDir, "package.json"))) {
   try {

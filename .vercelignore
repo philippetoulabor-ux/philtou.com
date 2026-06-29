@@ -1,0 +1,5 @@
+.env
+.env.*
+**/.env
+apps/worlding/.venv
+apps/worlding/vault

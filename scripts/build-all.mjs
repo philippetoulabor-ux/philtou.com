@@ -3,6 +3,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { buildHomeDist } from "./build-home-dist.mjs";
 import { buildArArchiveDist } from "./build-ar-archive-dist.mjs";
+import { buildWorldingDist } from "./build-worlding-dist.mjs";
 import { buildArchiveDist } from "./build-archive-dist.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -13,6 +14,9 @@ buildHomeDist({ copyLanding: true });
 
 console.log("Building apps/ar-archive…");
 buildArArchiveDist();
+
+console.log("Building apps/worlding…");
+buildWorldingDist();
 
 console.log(`Building apps/archive (${isVercel ? "export" : "standalone"})…`);
 execSync("npm run build", {

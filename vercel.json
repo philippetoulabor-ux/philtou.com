@@ -2,6 +2,17 @@
   "buildCommand": "node scripts/setup.mjs && npm run build",
   "installCommand": "npm install",
   "outputDirectory": "dist",
+  "rewrites": [
+    { "source": "/api/chat", "destination": "/apps/worlding/api/chat" },
+    { "source": "/worlding", "destination": "/worlding/index.html" },
+    { "source": "/worlding/(.*)", "destination": "/worlding/$1" }
+  ],
+  "functions": {
+    "apps/worlding/api/chat.py": {
+      "maxDuration": 30,
+      "includeFiles": "{apps/worlding/backend/**,apps/worlding/frontend/data.json,apps/worlding/frontend/rag_index.json}"
+    }
+  },
   "headers": [
     {
       "source": "/ar-archive/models/(.*)\\.usdz",
