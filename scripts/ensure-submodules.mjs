@@ -1,5 +1,11 @@
 import { execSync } from "node:child_process";
-import { existsSync, mkdirSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  rmSync,
+  symlinkSync,
+} from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -22,16 +28,29 @@ export function ensureSubmodules() {
   });
 }
 
-/** database-archive is local-only; export build needs the symlink target to exist. */
+function isEmptyDir(path) {
+  return !existsSync(path) || readdirSync(path).length === 0;
+}
+
+/**
+ * Archive images live in public/web (git). getProjects() reads database-archive/.
+ * Link the two before build/dev so static export and Vercel get real project data.
+ */
 export function ensureArchiveExportPrereqs() {
   const archiveDir = join(root, "apps/archive");
   const dbArchive = join(archiveDir, "database-archive");
+  const web = join(archiveDir, "public/web");
   const thumbs = join(archiveDir, "public/database-archive-thumbs");
 
-  if (!existsSync(dbArchive)) {
-    console.log(
-      "Creating apps/archive/database-archive (empty — assets are not in git)…"
-    );
+  const webReady = existsSync(web) && readdirSync(web).length > 0;
+
+  if (webReady && isEmptyDir(dbArchive)) {
+    if (existsSync(dbArchive)) {
+      rmSync(dbArchive, { recursive: true, force: true });
+    }
+    console.log("Linking apps/archive/database-archive → public/web");
+    symlinkSync("public/web", dbArchive, "dir");
+  } else if (!existsSync(dbArchive)) {
     mkdirSync(dbArchive, { recursive: true });
   }
 

@@ -14,7 +14,7 @@ Fünf getrennte Teile unter einem Gateway:
 
 Medien liegen **in den Submodule-Repos**, nicht auf dem Desktop:
 
-- **Archive:** `apps/archive/public/web/` → Repo [middleman.digital](https://github.com/philippetoulabor-ux/middleman.digital)
+- **Archive:** `apps/archive/public/web/` → Repo [archive](https://github.com/philippetoulabor-ux/archive) (Build verlinkt `database-archive/` dorthin)
 - **Home:** `apps/home/public/home-transformed.glb`, `public/lightmaps/` → Repo [home](https://github.com/philippetoulabor-ux/home)
 - **AR Archive:** `apps/ar-archive/public/models/` → Repo [ar-archive](https://github.com/philippetoulabor-ux/ar-archive)
 - **Worlding:** `apps/worlding/frontend/` (`data.json`, `rag_index.json`, `assets/`) → Repo [worlding](https://github.com/philippetoulabor-ux/worlding)
