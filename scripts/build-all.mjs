@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import { buildHomeDist } from "./build-home-dist.mjs";
 import { buildArArchiveDist } from "./build-ar-archive-dist.mjs";
 import { buildWorldingDist } from "./build-worlding-dist.mjs";
+import { buildWorldingApiBundle } from "./build-worlding-api.mjs";
 import { buildArchiveDist } from "./build-archive-dist.mjs";
 import { ensureArchiveExportPrereqs } from "./ensure-submodules.mjs";
 
@@ -18,6 +19,7 @@ buildArArchiveDist();
 
 console.log("Building apps/worlding…");
 buildWorldingDist();
+buildWorldingApiBundle();
 
 ensureArchiveExportPrereqs();
 

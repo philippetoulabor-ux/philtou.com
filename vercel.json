@@ -9,7 +9,7 @@
   "functions": {
     "api/chat.py": {
       "maxDuration": 30,
-      "includeFiles": "{apps/worlding/backend/**,apps/worlding/frontend/data.json,apps/worlding/frontend/rag_index.json}"
+      "excludeFiles": "{dist/**,apps/**,node_modules/**,scripts/**,previews/**,index.html,Dockerfile}"
     }
   },
   "headers": [

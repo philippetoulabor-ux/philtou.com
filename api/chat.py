@@ -7,7 +7,11 @@ import sys
 from http.server import BaseHTTPRequestHandler
 from pathlib import Path
 
-WORLDING_ROOT = Path(__file__).resolve().parent.parent / "apps" / "worlding"
+API_DIR = Path(__file__).resolve().parent
+BUNDLE_ROOT = API_DIR / "_bundle"
+SUBMODULE_ROOT = API_DIR.parent / "apps" / "worlding"
+
+WORLDING_ROOT = BUNDLE_ROOT if (BUNDLE_ROOT / "backend").is_dir() else SUBMODULE_ROOT
 if str(WORLDING_ROOT) not in sys.path:
     sys.path.insert(0, str(WORLDING_ROOT))
 
