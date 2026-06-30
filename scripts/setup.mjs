@@ -2,8 +2,11 @@
 import { execSync } from "node:child_process";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { ensureSubmodules } from "./ensure-submodules.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
+
+ensureSubmodules();
 
 console.log("Installing root dependencies…");
 execSync("npm install", { cwd: root, stdio: "inherit" });

@@ -1,6 +1,6 @@
 {
   "buildCommand": "node scripts/setup.mjs && npm run build",
-  "installCommand": "npm install",
+  "installCommand": "git submodule update --init --recursive && npm install",
   "outputDirectory": "dist",
   "rewrites": [
     { "source": "/worlding", "destination": "/worlding/index.html" },
