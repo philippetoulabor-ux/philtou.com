@@ -30,6 +30,23 @@
       font-weight: 400;
     }
 
+    header .intro {
+      max-width: 36rem;
+      margin-top: 0.75rem;
+      padding: 0 1rem;
+      font-size: 1rem;
+      line-height: 1.5;
+    }
+
+    header .intro a {
+      color: #0645AD;
+      text-decoration: none;
+    }
+
+    header .intro a:hover .wikilink-label {
+      text-decoration: underline;
+    }
+
     nav {
       display: flex;
       flex-direction: row;
@@ -121,6 +138,10 @@
 <body>
   <header>
     <h1>phil</h1>
+    <p class="intro">
+      Creating, contributing to and shaping <a href="/worlding">[[<span class="wikilink-label">Worlds</span>]]</a><br>
+      across disciplines – rooted in a background in product design
+    </p>
     <nav aria-label="Projekte">
       <a href="/home" class="project-thumb" target="_blank" rel="noopener noreferrer">
         <figure class="thumb">
@@ -149,16 +170,6 @@
               <span class="thumb-emoji">📱</span>
             </span>
             <figcaption class="thumbcaption">AR Archive</figcaption>
-          </div>
-        </figure>
-      </a>
-      <a href="/worlding" class="project-thumb" target="_blank" rel="noopener noreferrer">
-        <figure class="thumb">
-          <div class="thumbinner">
-            <span class="thumbimage thumbimage--emoji" aria-hidden="true">
-              <span class="thumb-emoji">🌐</span>
-            </span>
-            <figcaption class="thumbcaption">Worlding</figcaption>
           </div>
         </figure>
       </a>
