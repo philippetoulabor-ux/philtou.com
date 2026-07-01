@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 /**
- * Gateway :3000 — index.html, dist/home, dist/ar-archive, dist/worlding, archive proxy.
+ * Gateway :3000 — index.html, dist/home, dist/ar-archive, dist/worlding, dist/archive.
+ * Default: proxy /archive to Next.js on :3001 (hot-reload).
+ * Set ARCHIVE_DEV=0 to serve /archive from dist/ instead.
  */
 import {
   createReadStream,
@@ -15,10 +17,13 @@ import { formatLanUrls } from "./lan-address.mjs";
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const port = Number(process.env.GATEWAY_PORT) || 3000;
 const archiveUrl = process.env.ARCHIVE_URL || "http://127.0.0.1:3001";
+const archiveDev = process.env.ARCHIVE_DEV !== "0";
 
 const indexFile = join(root, "index.html");
-const distIndex = join(root, "dist", "index.html");
-const homeDir = join(root, "dist", "home");
+const distDir = join(root, "dist");
+const distIndex = join(distDir, "index.html");
+const archiveDir = join(distDir, "archive");
+const homeDir = join(distDir, "home");
 const arArchiveDir = join(root, "dist", "ar-archive");
 const worldingDir = join(root, "dist", "worlding");
 const previewsDir = join(root, "previews");
@@ -48,6 +53,20 @@ function send(res, status, body, type = "text/plain; charset=utf-8") {
   res.end(body);
 }
 
+function decodeUrlPath(rel) {
+  return rel
+    .split("/")
+    .map((segment) => {
+      if (!segment) return segment;
+      try {
+        return decodeURIComponent(segment);
+      } catch {
+        return segment;
+      }
+    })
+    .join("/");
+}
+
 function serveFile(res, filePath, { noCache = false } = {}) {
   if (!existsSync(filePath) || !statSync(filePath).isFile()) {
     send(res, 404, "Not found");
@@ -74,7 +93,9 @@ function serveStaticApp(res, urlPath, appDir, prefix, buildScript) {
     );
     return;
   }
-  const rel = urlPath.replace(new RegExp(`^${prefix}\\/?`), "") || "index.html";
+  const rel = decodeUrlPath(
+    urlPath.replace(new RegExp(`^${prefix}\\/?`), "") || "index.html",
+  );
   const base = normalize(appDir);
   const safe = normalize(join(appDir, rel));
   if (!safe.startsWith(base)) {
@@ -111,8 +132,66 @@ function serveWorlding(res, urlPath) {
   serveStaticApp(res, urlPath, worldingDir, "/worlding", "build-worlding-dist.mjs");
 }
 
+const ARCHIVE_ASSET_PREFIXES = [
+  ["/_next", "_next"],
+  ["/database-archive", "database-archive"],
+  ["/database-archive-thumbs", "database-archive-thumbs"],
+  ["/web", "web"],
+];
+
+function archiveStaticReady() {
+  return existsSync(join(archiveDir, "index.html"));
+}
+
+function serveDistAsset(res, urlPath, prefix, subdir) {
+  const rel = decodeUrlPath(urlPath.slice(prefix.length).replace(/^\//, ""));
+  const base = normalize(join(distDir, subdir));
+  const safe = normalize(join(base, rel));
+  if (!safe.startsWith(base)) {
+    send(res, 403, "Forbidden");
+    return;
+  }
+  serveFile(res, safe);
+}
+
+function serveArchive(res, urlPath) {
+  serveStaticApp(
+    res,
+    urlPath,
+    archiveDir,
+    "/archive",
+    "build-archive-dist.mjs"
+  );
+}
+
+function tryServeArchiveStatic(res, url) {
+  if (archiveDev || !archiveStaticReady()) {
+    return false;
+  }
+
+  if (url === "/archive" || url.startsWith("/archive/")) {
+    serveArchive(res, url);
+    return true;
+  }
+
+  for (const [prefix, subdir] of ARCHIVE_ASSET_PREFIXES) {
+    if (url === prefix || url.startsWith(`${prefix}/`)) {
+      serveDistAsset(res, url, prefix, subdir);
+      return true;
+    }
+  }
+
+  const pdfWorker = join(distDir, "pdf.worker.min.mjs");
+  if (url === "/pdf.worker.min.mjs" && existsSync(pdfWorker)) {
+    serveFile(res, pdfWorker);
+    return true;
+  }
+
+  return false;
+}
+
 function servePreviews(res, urlPath) {
-  const rel = urlPath.replace(/^\/previews\/?/, "");
+  const rel = decodeUrlPath(urlPath.replace(/^\/previews\/?/, ""));
   if (!rel) {
     send(res, 404, "Not found");
     return;
@@ -126,7 +205,7 @@ function servePreviews(res, urlPath) {
   serveFile(res, safe);
 }
 
-function proxy(req, res, targetBase) {
+function proxy(req, res, targetBase, { label = "Backend" } = {}) {
   const target = new URL(req.url, targetBase);
   const proxyReq = http.request(
     {
@@ -149,7 +228,10 @@ function proxy(req, res, targetBase) {
     send(
       res,
       502,
-      `Archive nicht erreichbar (${err.message}). Läuft npm run dev?`
+      JSON.stringify({
+        error: `${label} nicht erreichbar (${err.message}). Läuft npm run dev?`,
+      }),
+      "application/json"
     );
   });
   req.pipe(proxyReq);
@@ -188,12 +270,16 @@ function route(req, res) {
   }
 
   if (url === "/api/chat") {
-    proxy(req, res, worldingChatUrl);
+    proxy(req, res, worldingChatUrl, { label: "Chat-API" });
     return;
   }
 
   if (url.startsWith("/previews/")) {
     servePreviews(res, url);
+    return;
+  }
+
+  if (tryServeArchiveStatic(res, url)) {
     return;
   }
 
@@ -207,7 +293,7 @@ function route(req, res) {
     url === "/pdf.worker.min.mjs" ||
     url.startsWith("/_next/")
   ) {
-    proxy(req, res, archiveUrl);
+    proxy(req, res, archiveUrl, { label: "Archive" });
     return;
   }
 
