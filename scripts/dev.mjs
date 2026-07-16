@@ -10,15 +10,10 @@ import { buildHomeDist } from "./build-home-dist.mjs";
 import { buildArArchiveDist } from "./build-ar-archive-dist.mjs";
 import { buildWorldingDist } from "./build-worlding-dist.mjs";
 import { ensureArchiveExportPrereqs } from "./ensure-submodules.mjs";
-import { ensureWorldingPython } from "./ensure-worlding-python.mjs";
 import { formatLanUrls } from "./lan-address.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const worldingDir = join(root, "apps/worlding");
 const archiveDev = process.env.ARCHIVE_DEV !== "0";
-const worldingChatPort = Number(
-  new URL(process.env.WORLDING_CHAT_URL || "http://127.0.0.1:8080").port || 8080
-);
 const archiveIndex = join(root, "dist", "archive", "index.html");
 const archiveAppDir = join(root, "apps/archive");
 
@@ -146,24 +141,6 @@ if (archiveDev) {
   await waitForPort(3001);
 }
 
-const worldingPython = ensureWorldingPython();
-const worldingChat = spawn(worldingPython, ["dev_server.py"], {
-  cwd: worldingDir,
-  env: { ...process.env },
-  stdio: "inherit",
-});
-
-worldingChat.on("exit", (code, sig) => {
-  if (sig) return;
-  console.error(`[worlding-chat] exited with code ${code}`);
-  shutdown();
-  process.exit(code ?? 1);
-});
-procs.push(worldingChat);
-
-console.log(`Waiting for worlding chat on :${worldingChatPort}…`);
-await waitForPort(worldingChatPort);
-
 const gateway = spawn("node", ["scripts/gateway.mjs"], {
   cwd: root,
   env: { ...process.env, ARCHIVE_DEV: archiveDev ? "1" : "" },
@@ -195,4 +172,4 @@ console.log(
 if (!archiveDev) {
   warnIfArchiveDistIsStale();
 }
-console.log("  /api/chat    → worlding dev_server :8080 (proxy via Gateway)\n");
+console.log("");

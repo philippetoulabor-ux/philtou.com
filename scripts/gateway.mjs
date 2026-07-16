@@ -27,8 +27,6 @@ const homeDir = join(distDir, "home");
 const arArchiveDir = join(root, "dist", "ar-archive");
 const worldingDir = join(root, "dist", "worlding");
 const previewsDir = join(root, "previews");
-const worldingChatUrl =
-  process.env.WORLDING_CHAT_URL || "http://127.0.0.1:8080";
 
 const MIME = {
   ".html": "text/html; charset=utf-8",
@@ -266,11 +264,6 @@ function route(req, res) {
 
   if (url === "/worlding" || url.startsWith("/worlding/")) {
     serveWorlding(res, url);
-    return;
-  }
-
-  if (url === "/api/chat") {
-    proxy(req, res, worldingChatUrl, { label: "Chat-API" });
     return;
   }
 

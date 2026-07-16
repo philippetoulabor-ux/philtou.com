@@ -11,15 +11,16 @@ const venvPython =
     ? join(worlding, ".venv", "Scripts", "python.exe")
     : join(worlding, ".venv", "bin", "python");
 
+/** Ensure venv for process_notes.py (graph embeddings). */
 export function ensureWorldingPython() {
   if (!existsSync(venvPython)) {
     console.log("Creating worlding Python venv…");
     execSync("python3 -m venv .venv", { cwd: worlding, stdio: "inherit" });
     console.log("Installing worlding Python dependencies…");
-    execSync(
-      `${venvPython} -m pip install -r requirements.txt -r requirements-dev.txt`,
-      { cwd: worlding, stdio: "inherit" }
-    );
+    execSync(`${venvPython} -m pip install -r requirements.txt`, {
+      cwd: worlding,
+      stdio: "inherit",
+    });
   }
   return venvPython;
 }

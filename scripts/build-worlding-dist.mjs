@@ -1,4 +1,4 @@
-import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, rmSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -17,15 +17,6 @@ export function buildWorldingDist() {
   rmSync(distWorlding, { recursive: true, force: true });
   mkdirSync(distDir, { recursive: true });
   cpSync(frontendDir, distWorlding, { recursive: true });
-
-  let html = readFileSync(join(distWorlding, "index.html"), "utf8");
-  if (!html.includes('name="zettelkasten-api"')) {
-    html = html.replace(
-      '<meta name="viewport"',
-      '<meta name="zettelkasten-api" content="/api/chat">\n  <meta name="viewport"'
-    );
-    writeFileSync(join(distWorlding, "index.html"), html);
-  }
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

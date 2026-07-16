@@ -6,12 +6,6 @@
     { "source": "/worlding", "destination": "/worlding/index.html" },
     { "source": "/worlding/(.*)", "destination": "/worlding/$1" }
   ],
-  "functions": {
-    "api/chat.py": {
-      "maxDuration": 30,
-      "excludeFiles": "{dist/**,apps/**,node_modules/**,scripts/**,previews/**,index.html,Dockerfile}"
-    }
-  },
   "headers": [
     {
       "source": "/ar-archive/models/(.*)\\.usdz",
