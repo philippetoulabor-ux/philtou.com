@@ -82,7 +82,7 @@
       text-align: center;
       font-size: 94%;
       width: 100%;
-      min-height: 300px;
+      height: 300px;
     }
 
     @media (max-width: 520px) {
@@ -93,7 +93,7 @@
       }
 
       .thumbinner {
-        min-height: min(300px, 68vw);
+        height: min(300px, 68vw);
       }
     }
 
@@ -125,6 +125,23 @@
     .thumbimage--emoji .thumb-emoji {
       font-size: 4.5rem;
       line-height: 1;
+    }
+
+    .thumbimage--icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      line-height: 1;
+      box-sizing: border-box;
+    }
+
+    .thumbimage--icon img {
+      width: auto;
+      height: auto;
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
     }
 
     .thumbcaption {
@@ -165,8 +182,8 @@
       <a href="/ar-archive" class="project-thumb">
         <figure class="thumb">
           <div class="thumbinner">
-            <span class="thumbimage thumbimage--emoji" aria-hidden="true">
-              <span class="thumb-emoji">📱</span>
+            <span class="thumbimage thumbimage--icon">
+              <img src="/previews/ar-archive.webp" alt="" />
             </span>
             <figcaption class="thumbcaption">AR Archive</figcaption>
           </div>
