@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CV — phil</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #fff;
+      font-family: system-ui, sans-serif;
+      min-height: 100vh;
+    }
+
+    header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 2rem 1rem;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      font-weight: 400;
+    }
+
+    #gate {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+      width: 100%;
+      max-width: 20rem;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+    }
+
+    @media (min-width: 768px) {
+      #gate {
+        justify-content: center;
+        min-height: 100vh;
+        min-height: 100dvh;
+      }
+    }
+
+    #gate[hidden] {
+      display: none;
+    }
+
+    #gate label {
+      font-size: 1rem;
+      color: #202122;
+    }
+
+    #gate input[type="password"] {
+      width: 100%;
+      padding: 0.5rem 0.65rem;
+      font-size: 1rem;
+      border: 1px solid #a2a9b1;
+      border-radius: 2px;
+      font-family: inherit;
+    }
+
+    #gate input[type="password"]:focus {
+      outline: 2px solid #0645AD;
+      outline-offset: 1px;
+    }
+
+    #gate button {
+      padding: 0.45rem 1rem;
+      font-size: 1rem;
+      font-family: inherit;
+      border: 1px solid #a2a9b1;
+      background: #f8f9fa;
+      cursor: pointer;
+      border-radius: 2px;
+    }
+
+    #gate button:hover {
+      background: #eaecf0;
+    }
+
+    #gate-error {
+      color: #b32424;
+      font-size: 0.9rem;
+      min-height: 1.2em;
+    }
+
+    #content:empty {
+      display: none;
+    }
+
+    /* Helpers available inside unlocked content */
+    #content .cv-pdf {
+      width: min(100%, 52rem);
+      margin: 1rem auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      align-items: stretch;
+    }
+
+    #content .cv-pdf canvas {
+      width: 100%;
+      height: auto;
+      border: 1px solid #c8ccd1;
+      background: #fff;
+      display: block;
+    }
+
+    #content .cv-pdf-status {
+      text-align: center;
+      color: #54595d;
+      padding: 2rem 0;
+      font-size: 0.95rem;
+    }
+
+    #content .cv-downloads {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: center;
+      padding: 0 1rem 2rem;
+    }
+
+    #content .cv-downloads a {
+      color: #0645AD;
+      text-decoration: none;
+    }
+
+    #content .cv-downloads a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <form id="gate" autocomplete="off">
+    <label for="password">Password</label>
+    <input id="password" name="password" type="password" autofocus required />
+    <button type="submit">Enter</button>
+    <p id="gate-error" role="alert" aria-live="polite"></p>
+  </form>
+  <div id="content" hidden></div>
+  <script type="module">
+    const SESSION_KEY = "cv-unlocked";
+    const ASSET_PREFIX = "asset:";
+    const gate = document.getElementById("gate");
+    const content = document.getElementById("content");
+    const errorEl = document.getElementById("gate-error");
+    const passwordInput = document.getElementById("password");
+
+    /** @type {Map<string, string>} */
+    const blobUrls = new Map();
+
+    function b64ToBytes(b64) {
+      const bin = atob(b64);
+      const out = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+      return out;
+    }
+
+    async function deriveKey(password, salt, iterations) {
+      const enc = new TextEncoder();
+      const baseKey = await crypto.subtle.importKey(
+        "raw",
+        enc.encode(password),
+        "PBKDF2",
+        false,
+        ["deriveKey"]
+      );
+      return crypto.subtle.deriveKey(
+        { name: "PBKDF2", salt, iterations, hash: "SHA-256" },
+        baseKey,
+        { name: "AES-GCM", length: 256 },
+        false,
+        ["decrypt"]
+      );
+    }
+
+    async function decryptBytes(key, ivB64, ciphertextBytes) {
+      const iv = b64ToBytes(ivB64);
+      return crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, ciphertextBytes);
+    }
+
+    async function loadPayload() {
+      const res = await fetch("/cv/payload.json");
+      if (!res.ok) throw new Error("payload missing");
+      return res.json();
+    }
+
+    let payloadPromise = loadPayload();
+
+    function revokeBlobs() {
+      for (const url of blobUrls.values()) URL.revokeObjectURL(url);
+      blobUrls.clear();
+    }
+
+    function rewriteAssetRefs(rootEl) {
+      const attrs = ["src", "href", "data", "data-pdf"];
+      rootEl.querySelectorAll("*").forEach((el) => {
+        for (const attr of attrs) {
+          const val = el.getAttribute(attr);
+          if (!val || !val.startsWith(ASSET_PREFIX)) continue;
+          const name = val.slice(ASSET_PREFIX.length);
+          const url = blobUrls.get(name);
+          if (!url) continue;
+          el.setAttribute(attr, url);
+          if (attr === "href" && !el.hasAttribute("download")) {
+            el.setAttribute("download", name.split("/").pop());
+          }
+        }
+      });
+    }
+
+    const PDFJS_MAIN = "/cv/vendor/pdf.min.mjs";
+    const PDFJS_WORKER = "/cv/vendor/pdf.worker.min.mjs";
+
+    let pdfjsPromise = null;
+    function loadPdfjs() {
+      if (!pdfjsPromise) {
+        pdfjsPromise = import(PDFJS_MAIN).then((pdfjs) => {
+          pdfjs.GlobalWorkerOptions.workerSrc = PDFJS_WORKER;
+          return pdfjs;
+        });
+      }
+      return pdfjsPromise;
+    }
+
+    async function renderPdfs(rootEl) {
+      const hosts = [...rootEl.querySelectorAll(".cv-pdf[data-pdf]")];
+      if (!hosts.length) return;
+
+      let pdfjs;
+      try {
+        pdfjs = await loadPdfjs();
+      } catch (err) {
+        console.error("pdf.js failed to load", err);
+        for (const host of hosts) {
+          const el = document.createElement("p");
+          el.className = "cv-pdf-status";
+          el.textContent = "Could not load PDF viewer.";
+          host.replaceChildren(el);
+        }
+        return;
+      }
+
+      await Promise.all(
+        hosts.map(async (host) => {
+          const url = host.getAttribute("data-pdf");
+          if (!url || url.startsWith(ASSET_PREFIX)) return;
+
+          host.setAttribute("aria-busy", "true");
+          const status = document.createElement("p");
+          status.className = "cv-pdf-status";
+          status.textContent = "Loading…";
+          host.replaceChildren(status);
+
+          try {
+            const doc = await pdfjs.getDocument(url).promise;
+            const dpr = Math.min(window.devicePixelRatio || 1, 2);
+            const cssWidth = host.clientWidth || Math.min(window.innerWidth - 32, 832);
+            const pages = [];
+
+            for (let i = 1; i <= doc.numPages; i++) {
+              const page = await doc.getPage(i);
+              const base = page.getViewport({ scale: 1 });
+              const scale = (cssWidth / base.width) * dpr;
+              const viewport = page.getViewport({ scale });
+
+              const canvas = document.createElement("canvas");
+              canvas.width = Math.floor(viewport.width);
+              canvas.height = Math.floor(viewport.height);
+
+              await page.render({
+                canvasContext: canvas.getContext("2d", { alpha: false }),
+                viewport,
+              }).promise;
+
+              pages.push(canvas);
+            }
+
+            host.replaceChildren(...pages);
+          } catch (err) {
+            console.error("pdf render failed", err);
+            const errEl = document.createElement("p");
+            errEl.className = "cv-pdf-status";
+            errEl.textContent = "Could not render PDF.";
+            host.replaceChildren(errEl);
+          } finally {
+            host.removeAttribute("aria-busy");
+          }
+        })
+      );
+    }
+
+    async function tryUnlock(password) {
+      const payload = await payloadPromise;
+      if (payload.v !== 2 || !payload.html) throw new Error("unsupported payload");
+
+      const salt = b64ToBytes(payload.salt);
+      const key = await deriveKey(password, salt, payload.iter);
+
+      const htmlBytes = await decryptBytes(
+        key,
+        payload.html.iv,
+        b64ToBytes(payload.html.ciphertext)
+      );
+      const html = new TextDecoder().decode(htmlBytes);
+
+      revokeBlobs();
+      const assets = payload.assets || {};
+      await Promise.all(
+        Object.entries(assets).map(async ([name, meta]) => {
+          const res = await fetch(`/cv/${meta.file}`);
+          if (!res.ok) throw new Error(`asset missing: ${name}`);
+          const buf = await res.arrayBuffer();
+          const plain = await decryptBytes(key, meta.iv, buf);
+          const url = URL.createObjectURL(
+            new Blob([plain], { type: meta.mime || "application/octet-stream" })
+          );
+          blobUrls.set(name, url);
+        })
+      );
+
+      sessionStorage.setItem(SESSION_KEY, password);
+      content.innerHTML = html;
+      rewriteAssetRefs(content);
+      content.hidden = false;
+      gate.hidden = true;
+      document.title = "CV — phil";
+      await renderPdfs(content);
+    }
+
+    gate.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      errorEl.textContent = "";
+      const password = passwordInput.value;
+      try {
+        await tryUnlock(password);
+      } catch {
+        errorEl.textContent = "Wrong password.";
+        passwordInput.select();
+      }
+    });
+
+    const saved = sessionStorage.getItem(SESSION_KEY);
+    if (saved) {
+      tryUnlock(saved).catch(() => {
+        sessionStorage.removeItem(SESSION_KEY);
+      });
+    }
+  </script>
+</body>
+</html>

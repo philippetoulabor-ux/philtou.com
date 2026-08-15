@@ -10,10 +10,12 @@
     "dev:archive-static": "ARCHIVE_DEV=0 node scripts/dev.mjs",
     "dev:ar-archive": "npm run dev --prefix apps/ar-archive",
     "build": "node scripts/build-all.mjs",
-    "preview": "npm run build && node scripts/preview.mjs"
+    "preview": "npm run build && node scripts/preview.mjs",
+    "encrypt-cv": "node scripts/encrypt-cv.mjs"
   },
   "devDependencies": {
     "concurrently": "^9.1.2",
+    "pdfjs-dist": "^4.8.69",
     "playwright": "^1.61.1"
   }
 }

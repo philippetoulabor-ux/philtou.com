@@ -31,6 +31,10 @@
     }
 
     header .intro {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1rem;
       max-width: 36rem;
       margin-top: 0.75rem;
       padding: 0 1rem;
@@ -38,13 +42,23 @@
       line-height: 1.5;
     }
 
-    header .intro a {
+    header .intro a,
+    .corner-link {
       color: #0645AD;
       text-decoration: none;
     }
 
-    header .intro a:hover .wikilink-label {
+    header .intro a:hover .wikilink-label,
+    .corner-link:hover .wikilink-label {
       text-decoration: underline;
+    }
+
+    .corner-link {
+      position: fixed;
+      right: 1rem;
+      bottom: 1rem;
+      font-size: 1rem;
+      line-height: 1.5;
     }
 
     nav {
@@ -156,7 +170,8 @@
   <header>
     <h1>phil</h1>
     <p class="intro">
-      <a href="/worlding">[[<span class="wikilink-label">Worlds</span>]]</a>
+      <a href="/cv" target="_blank" rel="noopener">[[<span class="wikilink-label">CV</span>]]</a>
+      <a href="mailto:philippetoulabor@gmail.com">[[<span class="wikilink-label">contact</span>]]</a>
     </p>
     <nav aria-label="Projekte">
       <a href="/home" class="project-thumb">
@@ -191,5 +206,6 @@
       </a>
     </nav>
   </header>
+  <a href="/worlding" class="corner-link">[[<span class="wikilink-label">Worlding</span>]]</a>
 </body>
 </html>

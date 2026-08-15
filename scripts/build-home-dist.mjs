@@ -1,5 +1,5 @@
 import { cpSync, existsSync, mkdirSync, rmSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { dirname, join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { execSync } from "node:child_process";
 
@@ -15,6 +15,27 @@ export function buildHomeDist({ copyLanding = false } = {}) {
   cpSync(homeDist, distHome, { recursive: true });
   if (copyLanding && existsSync(join(root, "index.html"))) {
     cpSync(join(root, "index.html"), join(distDir, "index.html"));
+  }
+  const cvDir = join(root, "cv");
+  if (copyLanding && existsSync(cvDir)) {
+    const distCv = join(distDir, "cv");
+    rmSync(distCv, { recursive: true, force: true });
+    cpSync(cvDir, distCv, {
+      recursive: true,
+      filter: (src) => {
+        const rel = relative(cvDir, src);
+        if (!rel || rel === ".") return true;
+        return rel.split(sep)[0] !== "private";
+      },
+    });
+    const pdfjsBuild = join(root, "node_modules/pdfjs-dist/build");
+    if (existsSync(pdfjsBuild)) {
+      const vendor = join(distCv, "vendor");
+      mkdirSync(vendor, { recursive: true });
+      for (const name of ["pdf.min.mjs", "pdf.worker.min.mjs"]) {
+        cpSync(join(pdfjsBuild, name), join(vendor, name));
+      }
+    }
   }
   const previewsDir = join(root, "previews");
   if (copyLanding && existsSync(previewsDir)) {

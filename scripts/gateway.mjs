@@ -20,8 +20,10 @@ const archiveUrl = process.env.ARCHIVE_URL || "http://127.0.0.1:3001";
 const archiveDev = process.env.ARCHIVE_DEV !== "0";
 
 const indexFile = join(root, "index.html");
+const cvDir = join(root, "cv");
 const distDir = join(root, "dist");
 const distIndex = join(distDir, "index.html");
+const distCvDir = join(distDir, "cv");
 const archiveDir = join(distDir, "archive");
 const homeDir = join(distDir, "home");
 const arArchiveDir = join(root, "dist", "ar-archive");
@@ -249,6 +251,24 @@ function route(req, res) {
       return;
     }
     send(res, 404, "index.html missing");
+    return;
+  }
+
+  if (url === "/cv" || url.startsWith("/cv/")) {
+    if (url === "/cv/private" || url.startsWith("/cv/private/")) {
+      send(res, 404, "Not found");
+      return;
+    }
+    // Source cv/ is truth during dev; dist/cv is the build snapshot.
+    if (existsSync(cvDir)) {
+      serveStaticApp(res, url, cvDir, "/cv", "build-home-dist.mjs");
+      return;
+    }
+    if (existsSync(distCvDir)) {
+      serveStaticApp(res, url, distCvDir, "/cv", "build-home-dist.mjs");
+      return;
+    }
+    send(res, 404, "cv missing");
     return;
   }
 

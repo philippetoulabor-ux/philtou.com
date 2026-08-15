@@ -1,0 +1,18 @@
+{
+  "v": 2,
+  "kdf": "PBKDF2-SHA256",
+  "iter": 210000,
+  "salt": "OfSblXn24tNct+OKhfMDTg==",
+  "html": {
+    "iv": "QlWHrGmVOY9Wowpz",
+    "ciphertext": "BKZlepmXSU9LJN06Ow8ZII2Lq4mLr5xf4dNDgTJDisCCH/p+v5sjX7PWFsi/9TTWb7Qn844A3WhnDxR+sC2DFWR5HwTtjFllZCBaIDJ9EEEM+wPf2++r3DHHgz30WhRqj0AD3zsDNScq5dLRQV7H8oAj72KhFCR/Yven0igWh4opE1QbzdLMN0IGj0BbECoPV7MWbqjGpOhU1/3EIntYFeFA166fBIm7LcatDRaAcCn0NehJpusfY+4uV6+Qveu6lJPA9zp+AzqC8ZcARAnacv4GHjCL3iPq6ZSeKYNSfiqYtrtYvieLw5b9"
+  },
+  "assets": {
+    "CV-english.pdf": {
+      "iv": "BkZ6LRqQpQBRHum0",
+      "mime": "application/pdf",
+      "file": "enc/CV-english.pdf.bin",
+      "bytes": 326172
+    }
+  }
+}

@@ -3,6 +3,7 @@
   "installCommand": "git submodule update --init --recursive && npm install",
   "outputDirectory": "dist",
   "rewrites": [
+    { "source": "/cv", "destination": "/cv/index.html" },
     { "source": "/worlding", "destination": "/worlding/index.html" },
     { "source": "/worlding/(.*)", "destination": "/worlding/$1" }
   ],
