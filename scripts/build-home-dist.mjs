@@ -16,6 +16,12 @@ export function buildHomeDist({ copyLanding = false } = {}) {
   if (copyLanding && existsSync(join(root, "index.html"))) {
     cpSync(join(root, "index.html"), join(distDir, "index.html"));
   }
+  if (copyLanding) {
+    for (const name of ["favicon.png", "favicon.ico", "apple-touch-icon.png"]) {
+      const file = join(root, name);
+      if (existsSync(file)) cpSync(file, join(distDir, name));
+    }
+  }
   const cvDir = join(root, "cv");
   if (copyLanding && existsSync(cvDir)) {
     const distCv = join(distDir, "cv");

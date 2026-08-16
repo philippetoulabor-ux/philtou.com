@@ -254,6 +254,26 @@ function route(req, res) {
     return;
   }
 
+  if (
+    url === "/favicon.png" ||
+    url === "/favicon.ico" ||
+    url === "/apple-touch-icon.png"
+  ) {
+    const name = url.slice(1); // favicon.png | favicon.ico | apple-touch-icon.png
+    const rootFile = join(root, name);
+    const distFile = join(distDir, name);
+    if (existsSync(rootFile)) {
+      serveFile(res, rootFile, { noCache: true });
+      return;
+    }
+    if (existsSync(distFile)) {
+      serveFile(res, distFile);
+      return;
+    }
+    send(res, 404, "Not found");
+    return;
+  }
+
   if (url === "/cv" || url.startsWith("/cv/")) {
     if (url === "/cv/private" || url.startsWith("/cv/private/")) {
       send(res, 404, "Not found");
