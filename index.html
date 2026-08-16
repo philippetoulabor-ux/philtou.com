@@ -28,16 +28,69 @@
       padding: 2rem 1rem;
     }
 
+    .brand-spacer {
+      display: none;
+    }
+
+    /* Side-by-side / 2+1 wrap: center tiles (and title above them) in the viewport */
+    @media (min-width: 961px) {
+      header {
+        display: grid;
+        grid-template-rows: 1fr auto 1fr;
+        grid-template-columns: 1fr;
+        min-height: 100vh;
+        padding-top: 0;
+        padding-bottom: 0;
+        box-sizing: border-box;
+      }
+
+      /*
+        Equal spacers center the title. On expand, JS pins the top spacer
+        height so the title stays put while the bottom spacer shrinks / the
+        brand row grows and the tiles move down.
+      */
+      .brand {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        align-self: stretch;
+        height: 100%;
+      }
+
+      .brand-spacer {
+        display: block;
+        width: 100%;
+        pointer-events: none;
+        flex: 1 1 0;
+        min-height: 0;
+      }
+
+      .brand-title {
+        flex: 0 0 auto;
+      }
+
+      nav {
+        margin-top: 0;
+      }
+    }
+
     header h1 {
       font-size: 2rem;
       font-weight: 400;
     }
 
-    header .intro {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 1rem;
+    header h1 .brand-toggle {
+      appearance: none;
+      border: 0;
+      background: none;
+      padding: 0;
+      margin: 0;
+      font: inherit;
+      color: inherit;
+      cursor: pointer;
+    }
+
+    header .about {
       max-width: 36rem;
       margin-top: 0.75rem;
       padding: 0 1rem;
@@ -45,13 +98,17 @@
       line-height: 1.5;
     }
 
-    header .intro a,
+    header .about[hidden] {
+      display: none;
+    }
+
+    header .about a,
     .corner-links a {
       color: #0645AD;
       text-decoration: none;
     }
 
-    header .intro a:hover .wikilink-label,
+    header .about a:hover .wikilink-label,
     .corner-links a:hover .wikilink-label {
       text-decoration: underline;
     }
@@ -182,10 +239,20 @@
 </head>
 <body>
   <header>
-    <h1>phil</h1>
-    <p class="intro">
-      <a href="/worlding" target="_blank" rel="noopener">[[<span class="wikilink-label">Worlding</span>]]</a>
-    </p>
+    <div class="brand">
+      <div class="brand-spacer brand-spacer--top" aria-hidden="true"></div>
+      <div class="brand-title">
+        <h1>
+          <button type="button" class="brand-toggle" aria-expanded="false" aria-controls="about">phil</button>
+        </h1>
+        <p id="about" class="about" hidden>
+          Creating, contributing to and shaping
+          <a href="/worlding" target="_blank" rel="noopener">[[<span class="wikilink-label">Worlds</span>]]</a><br>
+          across disciplines - rooted in a background in product design
+        </p>
+      </div>
+      <div class="brand-spacer brand-spacer--bottom" aria-hidden="true"></div>
+    </div>
     <nav aria-label="Projekte">
       <a href="/home" class="project-thumb">
         <figure class="thumb">
@@ -223,5 +290,35 @@
     <a href="/cv" target="_blank" rel="noopener">[[<span class="wikilink-label">CV</span>]]</a>
     <a href="mailto:philippetoulabor@gmail.com">[[<span class="wikilink-label">contact</span>]]</a>
   </div>
+  <script>
+    (() => {
+      const toggle = document.querySelector(".brand-toggle");
+      const about = document.getElementById("about");
+      const topSpacer = document.querySelector(".brand-spacer--top");
+      const mq = window.matchMedia("(min-width: 961px)");
+      if (!toggle || !about || !topSpacer) return;
+
+      const unpinTitle = () => {
+        topSpacer.style.flex = "";
+      };
+
+      toggle.addEventListener("click", () => {
+        const open = about.hasAttribute("hidden");
+        if (open && mq.matches) {
+          topSpacer.style.flex = `0 0 ${topSpacer.offsetHeight}px`;
+        }
+        about.toggleAttribute("hidden", !open);
+        toggle.setAttribute("aria-expanded", open ? "true" : "false");
+        if (!open) unpinTitle();
+      });
+
+      mq.addEventListener("change", () => {
+        if (!mq.matches || about.hasAttribute("hidden")) unpinTitle();
+      });
+      window.addEventListener("resize", () => {
+        if (about.hasAttribute("hidden")) unpinTitle();
+      });
+    })();
+  </script>
 </body>
 </html>
