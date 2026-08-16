@@ -43,20 +43,22 @@
     }
 
     header .intro a,
-    .corner-link {
+    .corner-links a {
       color: #0645AD;
       text-decoration: none;
     }
 
     header .intro a:hover .wikilink-label,
-    .corner-link:hover .wikilink-label {
+    .corner-links a:hover .wikilink-label {
       text-decoration: underline;
     }
 
-    .corner-link {
+    .corner-links {
       position: fixed;
       right: 1rem;
       bottom: 1rem;
+      display: flex;
+      gap: 1rem;
       font-size: 1rem;
       line-height: 1.5;
     }
@@ -170,8 +172,7 @@
   <header>
     <h1>phil</h1>
     <p class="intro">
-      <a href="/cv" target="_blank" rel="noopener">[[<span class="wikilink-label">CV</span>]]</a>
-      <a href="mailto:philippetoulabor@gmail.com">[[<span class="wikilink-label">contact</span>]]</a>
+      <a href="/worlding">[[<span class="wikilink-label">Worlding</span>]]</a>
     </p>
     <nav aria-label="Projekte">
       <a href="/home" class="project-thumb">
@@ -206,6 +207,9 @@
       </a>
     </nav>
   </header>
-  <a href="/worlding" class="corner-link">[[<span class="wikilink-label">Worlding</span>]]</a>
+  <div class="corner-links">
+    <a href="/cv" target="_blank" rel="noopener">[[<span class="wikilink-label">CV</span>]]</a>
+    <a href="mailto:philippetoulabor@gmail.com">[[<span class="wikilink-label">contact</span>]]</a>
+  </div>
 </body>
 </html>
