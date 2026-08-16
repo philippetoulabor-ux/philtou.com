@@ -17,7 +17,7 @@ console.log("Building apps/ar-archive…");
 buildArArchiveDist();
 
 console.log("Building apps/worlding…");
-buildWorldingDist();
+await buildWorldingDist();
 
 ensureArchiveExportPrereqs();
 

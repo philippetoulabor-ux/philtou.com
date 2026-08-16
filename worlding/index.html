@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Worlding — phil</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #fff;
+      font-family: system-ui, sans-serif;
+      min-height: 100vh;
+    }
+
+    header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 2rem 1rem 0;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      font-weight: 400;
+    }
+
+    #gate {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+      width: 100%;
+      max-width: 20rem;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+    }
+
+    @media (min-width: 768px) {
+      body {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        min-height: 100dvh;
+      }
+
+      #gate {
+        flex: 1;
+        justify-content: center;
+        min-height: 0;
+      }
+    }
+
+    #gate[hidden] {
+      display: none;
+    }
+
+    #gate label {
+      font-size: 1rem;
+      color: #202122;
+    }
+
+    #gate .password-field {
+      position: relative;
+      width: 100%;
+    }
+
+    #gate input[type="password"],
+    #gate input[type="text"] {
+      width: 100%;
+      padding: 0.5rem 2.5rem 0.5rem 0.65rem;
+      font-size: 1rem;
+      border: 1px solid #a2a9b1;
+      border-radius: 2px;
+      font-family: inherit;
+    }
+
+    #gate input[type="password"]:focus,
+    #gate input[type="text"]:focus {
+      outline: 2px solid #0645AD;
+      outline-offset: 1px;
+    }
+
+    #gate button {
+      padding: 0.45rem 1rem;
+      font-size: 1rem;
+      font-family: inherit;
+      border: 1px solid #a2a9b1;
+      background: #f8f9fa;
+      cursor: pointer;
+      border-radius: 2px;
+    }
+
+    #gate button:hover {
+      background: #eaecf0;
+    }
+
+    #gate .toggle-password {
+      position: absolute;
+      right: 0.2rem;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 2rem;
+      height: 2rem;
+      padding: 0;
+      border: none;
+      background: transparent;
+      color: #54595d;
+    }
+
+    #gate .toggle-password:hover {
+      background: transparent;
+      color: #202122;
+    }
+
+    #gate .toggle-password svg {
+      width: 1.15rem;
+      height: 1.15rem;
+      display: block;
+    }
+
+    #gate .toggle-password .icon-hide {
+      display: none;
+    }
+
+    #gate .toggle-password[aria-pressed="true"] .icon-show {
+      display: none;
+    }
+
+    #gate .toggle-password[aria-pressed="true"] .icon-hide {
+      display: block;
+    }
+
+    #gate-error {
+      color: #b32424;
+      font-size: 0.9rem;
+      min-height: 1.2em;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>work in progress</h1>
+  </header>
+  <form id="gate" autocomplete="off">
+    <label for="password">Password</label>
+    <div class="password-field">
+      <input id="password" name="password" type="password" autofocus required />
+      <button
+        type="button"
+        class="toggle-password"
+        id="toggle-password"
+        aria-label="Show password"
+        aria-controls="password"
+        aria-pressed="false"
+      >
+        <svg class="icon-show" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/>
+          <circle cx="12" cy="12" r="3"/>
+        </svg>
+        <svg class="icon-hide" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 3l18 18"/>
+          <path d="M10.6 10.6a3 3 0 0 0 4.2 4.2"/>
+          <path d="M9.9 5.1A10.4 10.4 0 0 1 12 5c6.5 0 10 7 10 7a18.4 18.4 0 0 1-3.2 4.1"/>
+          <path d="M6.1 6.1A18.5 18.5 0 0 0 2 12s3.5 7 10 7a10.3 10.3 0 0 0 4.1-.8"/>
+        </svg>
+      </button>
+    </div>
+    <button type="submit">Enter</button>
+    <p id="gate-error" role="alert" aria-live="polite"></p>
+  </form>
+  <script type="module">
+    const SESSION_KEY = "worlding-unlocked";
+    const gate = document.getElementById("gate");
+    const errorEl = document.getElementById("gate-error");
+    const passwordInput = document.getElementById("password");
+    const togglePassword = document.getElementById("toggle-password");
+
+    togglePassword.addEventListener("click", () => {
+      const showing = passwordInput.type === "text";
+      passwordInput.type = showing ? "password" : "text";
+      togglePassword.setAttribute("aria-label", showing ? "Show password" : "Hide password");
+      togglePassword.setAttribute("aria-pressed", showing ? "false" : "true");
+      passwordInput.focus();
+    });
+
+    function b64ToBytes(b64) {
+      const bin = atob(b64);
+      const out = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+      return out;
+    }
+
+    function bytesToB64(bytes) {
+      let s = "";
+      for (let i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]);
+      return btoa(s);
+    }
+
+    async function deriveKey(password, salt, iterations) {
+      const enc = new TextEncoder();
+      const baseKey = await crypto.subtle.importKey(
+        "raw",
+        enc.encode(password),
+        "PBKDF2",
+        false,
+        ["deriveKey"]
+      );
+      return crypto.subtle.deriveKey(
+        { name: "PBKDF2", salt, iterations, hash: "SHA-256" },
+        baseKey,
+        { name: "AES-GCM", length: 256 },
+        false,
+        ["decrypt"]
+      );
+    }
+
+    async function decryptBytes(key, ivB64, ciphertextBytes) {
+      const iv = b64ToBytes(ivB64);
+      return crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, ciphertextBytes);
+    }
+
+    async function loadPayload() {
+      const res = await fetch("/worlding/payload.json");
+      if (!res.ok) throw new Error("payload missing");
+      return res.json();
+    }
+
+    let payloadPromise = loadPayload();
+
+    /**
+     * Inject a sync bootstrap that patches fetch / asset URLs, then replace the document
+     * with the decrypted Worlding app (same unlock model as /cv).
+     */
+    function enterApp(html, dataJsonText, payload) {
+      const boot = `<script>
+(function () {
+  const SESSION_KEY = ${JSON.stringify(SESSION_KEY)};
+  const password = sessionStorage.getItem(SESSION_KEY);
+  const payloadMeta = ${JSON.stringify({
+    salt: payload.salt,
+    iter: payload.iter,
+    assets: payload.assets || {},
+  })};
+  const dataB64 = ${JSON.stringify(bytesToB64(new TextEncoder().encode(dataJsonText)))};
+
+  function b64ToBytes(b64) {
+    const bin = atob(b64);
+    const out = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+    return out;
+  }
+
+  window.__WORLDING_DATA__ = JSON.parse(new TextDecoder().decode(b64ToBytes(dataB64)));
+
+  const assetCache = new Map();
+  let keyPromise = null;
+
+  async function getKey() {
+    if (!keyPromise) {
+      keyPromise = (async () => {
+        const enc = new TextEncoder();
+        const baseKey = await crypto.subtle.importKey(
+          "raw",
+          enc.encode(password),
+          "PBKDF2",
+          false,
+          ["deriveKey"]
+        );
+        return crypto.subtle.deriveKey(
+          {
+            name: "PBKDF2",
+            salt: b64ToBytes(payloadMeta.salt),
+            iterations: payloadMeta.iter,
+            hash: "SHA-256",
+          },
+          baseKey,
+          { name: "AES-GCM", length: 256 },
+          false,
+          ["decrypt"]
+        );
+      })();
+    }
+    return keyPromise;
+  }
+
+  function assetPath(url) {
+    try {
+      const u = new URL(url, location.href);
+      const path = u.pathname.replace(/^\\/worlding\\//, "");
+      if (path.startsWith("assets/")) return path;
+    } catch (_) {}
+    const s = String(url);
+    if (s.startsWith("assets/")) return s.split("?")[0];
+    if (s.startsWith("./assets/")) return s.slice(2).split("?")[0];
+    return null;
+  }
+
+  async function resolveAsset(path) {
+    if (assetCache.has(path)) return assetCache.get(path);
+    const meta = payloadMeta.assets[path];
+    if (!meta) throw new Error("asset missing: " + path);
+    const key = await getKey();
+    const res = await fetch("/worlding/" + meta.file);
+    if (!res.ok) throw new Error("asset fetch failed: " + path);
+    const buf = await res.arrayBuffer();
+    const iv = b64ToBytes(meta.iv);
+    const plain = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, buf);
+    const url = URL.createObjectURL(
+      new Blob([plain], { type: meta.mime || "application/octet-stream" })
+    );
+    assetCache.set(path, url);
+    return url;
+  }
+
+  const origFetch = window.fetch.bind(window);
+  window.fetch = async function (input, init) {
+    const raw = typeof input === "string" ? input : input && input.url;
+    if (raw && (raw === "./data.json" || raw.endsWith("/data.json") || raw.includes("data.json"))) {
+      return new Response(JSON.stringify(window.__WORLDING_DATA__), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+    const path = raw ? assetPath(raw) : null;
+    if (path && payloadMeta.assets[path]) {
+      const blobUrl = await resolveAsset(path);
+      return origFetch(blobUrl, init);
+    }
+    return origFetch(input, init);
+  };
+
+  async function rewriteEl(el) {
+    if (!el || !el.getAttribute) return;
+    for (const attr of ["src", "href"]) {
+      const val = el.getAttribute(attr);
+      if (!val) continue;
+      const path = assetPath(val);
+      if (!path || !payloadMeta.assets[path]) continue;
+      if (attr === "src") el.removeAttribute("src");
+      try {
+        const url = await resolveAsset(path);
+        el.setAttribute(attr, url);
+        if (attr === "href" && !el.hasAttribute("download")) {
+          el.setAttribute("download", path.split("/").pop());
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  }
+
+  const obs = new MutationObserver((mutations) => {
+    for (const m of mutations) {
+      for (const n of m.addedNodes) {
+        if (n.nodeType !== 1) continue;
+        rewriteEl(n);
+        if (n.querySelectorAll) {
+          n.querySelectorAll("[src],[href]").forEach(rewriteEl);
+        }
+      }
+    }
+  });
+  obs.observe(document.documentElement, { childList: true, subtree: true });
+})();
+<\/script>`;
+
+      const injected = html.replace(/<head([^>]*)>/i, `<head$1>${boot}`);
+      document.open();
+      document.write(injected);
+      document.close();
+    }
+
+    async function tryUnlock(password) {
+      const payload = await payloadPromise;
+      if (payload.v !== 2 || !payload.html || !payload.data) {
+        throw new Error("unsupported payload");
+      }
+
+      const salt = b64ToBytes(payload.salt);
+      const key = await deriveKey(password, salt, payload.iter);
+
+      const htmlBytes = await decryptBytes(
+        key,
+        payload.html.iv,
+        b64ToBytes(payload.html.ciphertext)
+      );
+      const dataBytes = await decryptBytes(
+        key,
+        payload.data.iv,
+        b64ToBytes(payload.data.ciphertext)
+      );
+
+      const html = new TextDecoder().decode(htmlBytes);
+      const dataJsonText = new TextDecoder().decode(dataBytes);
+
+      sessionStorage.setItem(SESSION_KEY, password);
+      enterApp(html, dataJsonText, payload);
+    }
+
+    gate.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      errorEl.textContent = "";
+      const password = passwordInput.value;
+      try {
+        await tryUnlock(password);
+      } catch {
+        errorEl.textContent = "Wrong password.";
+        passwordInput.select();
+      }
+    });
+
+    const saved = sessionStorage.getItem(SESSION_KEY);
+    if (saved) {
+      tryUnlock(saved).catch(() => {
+        sessionStorage.removeItem(SESSION_KEY);
+      });
+    }
+  </script>
+</body>
+</html>

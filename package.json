@@ -11,7 +11,8 @@
     "dev:ar-archive": "npm run dev --prefix apps/ar-archive",
     "build": "node scripts/build-all.mjs",
     "preview": "npm run build && node scripts/preview.mjs",
-    "encrypt-cv": "node scripts/encrypt-cv.mjs"
+    "encrypt-cv": "node scripts/encrypt-cv.mjs",
+    "encrypt-worlding": "node scripts/encrypt-worlding.mjs"
   },
   "devDependencies": {
     "concurrently": "^9.1.2",

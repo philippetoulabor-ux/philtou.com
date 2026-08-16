@@ -73,7 +73,7 @@ console.log("Building ar-archive → dist/ar-archive…");
 buildArArchiveDist();
 
 console.log("Building worlding → dist/worlding…");
-buildWorldingDist();
+await buildWorldingDist();
 
 function watchWorldingFrontend() {
   const frontendDir = join(root, "apps/worlding/frontend");
@@ -82,11 +82,9 @@ function watchWorldingFrontend() {
     clearTimeout(timer);
     timer = setTimeout(() => {
       console.log("[worlding] frontend changed — rebuilding dist/worlding…");
-      try {
-        buildWorldingDist();
-      } catch (err) {
+      buildWorldingDist().catch((err) => {
         console.error("[worlding] rebuild failed:", err.message);
-      }
+      });
     }, 300);
   });
 }
