@@ -1,31 +1,38 @@
-import { existsSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, rmSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { encryptWorlding } from "./encrypt-worlding.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const frontendDir = join(root, "apps/worlding/frontend");
-const distWorlding = join(root, "dist", "worlding");
+const worldingDir = join(root, "worlding");
+const distDir = join(root, "dist");
+const distWorlding = join(distDir, "worlding");
 
-export async function buildWorldingDist() {
-  if (!existsSync(join(frontendDir, "index.html"))) {
+/**
+ * Copy pre-encrypted worlding/ (gate + payload.json + enc/) → dist/worlding.
+ * Run `npm run encrypt-worlding` after editing apps/worlding/frontend.
+ */
+export function buildWorldingDist() {
+  const payloadPath = join(worldingDir, "payload.json");
+  if (!existsSync(payloadPath)) {
     throw new Error(
-      "apps/worlding/frontend missing — git submodule update --init apps/worlding"
+      "worlding/payload.json missing — run: npm run encrypt-worlding"
     );
   }
+  if (!existsSync(join(worldingDir, "index.html"))) {
+    throw new Error("worlding/index.html missing");
+  }
 
-  await encryptWorlding({
-    frontendDir,
-    outDir: distWorlding,
-    gatePath: join(root, "worlding/index.html"),
-  });
+  rmSync(distWorlding, { recursive: true, force: true });
+  mkdirSync(distDir, { recursive: true });
+  cpSync(worldingDir, distWorlding, { recursive: true });
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  buildWorldingDist()
-    .then(() => console.log("dist/worlding ready."))
-    .catch((err) => {
-      console.error(err.message || err);
-      process.exit(1);
-    });
+  try {
+    buildWorldingDist();
+    console.log("dist/worlding ready.");
+  } catch (err) {
+    console.error(err.message || err);
+    process.exit(1);
+  }
 }

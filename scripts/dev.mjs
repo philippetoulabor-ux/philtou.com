@@ -73,23 +73,25 @@ console.log("Building ar-archive → dist/ar-archive…");
 buildArArchiveDist();
 
 console.log("Building worlding → dist/worlding…");
-await buildWorldingDist();
+buildWorldingDist();
 
-function watchWorldingFrontend() {
-  const frontendDir = join(root, "apps/worlding/frontend");
+function watchWorldingEncrypted() {
+  const worldingDir = join(root, "worlding");
   let timer = null;
-  watch(frontendDir, { recursive: true }, () => {
+  watch(worldingDir, { recursive: true }, () => {
     clearTimeout(timer);
     timer = setTimeout(() => {
-      console.log("[worlding] frontend changed — rebuilding dist/worlding…");
-      buildWorldingDist().catch((err) => {
+      console.log("[worlding] encrypted files changed — copying dist/worlding…");
+      try {
+        buildWorldingDist();
+      } catch (err) {
         console.error("[worlding] rebuild failed:", err.message);
-      });
+      }
     }, 300);
   });
 }
 
-watchWorldingFrontend();
+watchWorldingEncrypted();
 
 if (!archiveDev && !existsSync(archiveIndex)) {
   console.log("Building archive → dist/archive…");

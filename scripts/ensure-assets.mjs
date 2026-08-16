@@ -81,6 +81,10 @@ const worldingData = join(root, "apps/worlding/frontend/data.json");
 if (!existsSync(worldingData)) {
   warn("Worlding data.json fehlt — git submodule update --init apps/worlding");
 }
+const worldingPayload = join(root, "worlding/payload.json");
+if (!existsSync(worldingPayload)) {
+  warn("worlding/payload.json fehlt — npm run encrypt-worlding");
+}
 
 const arArchiveDir = join(root, "apps/ar-archive");
 if (existsSync(join(arArchiveDir, "package.json"))) {

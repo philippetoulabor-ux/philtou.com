@@ -1,11 +1,12 @@
 /**
- * Encrypt apps/worlding/frontend → outDir/payload.json (+ outDir/enc/*.bin).
+ * Encrypt apps/worlding/frontend → worlding/payload.json (+ worlding/enc/*.bin).
  *
  * - index.html → payload.html (ciphertext)
  * - data.json → payload.data (ciphertext)
  * - assets/* → enc/*.bin
  *
- * Password: WORLDING_PASSWORD, else CV_PASSWORD, else first CLI arg.
+ * Commit worlding/index.html + payload.json + enc/ (never the plaintext submodule
+ * content into dist). Password: WORLDING_PASSWORD, else CV_PASSWORD, else CLI arg.
  */
 import {
   readFileSync,
@@ -15,7 +16,6 @@ import {
   readdirSync,
   rmSync,
   statSync,
-  cpSync,
 } from "node:fs";
 import { dirname, join, relative, sep, extname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -103,13 +103,14 @@ async function encryptBytes(key, bytes) {
 }
 
 /**
- * @param {{ frontendDir?: string, outDir?: string, gatePath?: string, password?: string }} [opts]
+ * @param {{ frontendDir?: string, outDir?: string, password?: string }} [opts]
  */
 export async function encryptWorlding(opts = {}) {
   loadDotEnv();
   const frontendDir = opts.frontendDir || join(root, "apps/worlding/frontend");
-  const outDir = opts.outDir || join(root, "dist/worlding");
-  const gatePath = opts.gatePath || join(root, "worlding/index.html");
+  const outDir = opts.outDir || join(root, "worlding");
+  const payloadPath = join(outDir, "payload.json");
+  const encDir = join(outDir, "enc");
   const password =
     opts.password ||
     process.env.WORLDING_PASSWORD ||
@@ -130,8 +131,10 @@ export async function encryptWorlding(opts = {}) {
   if (!existsSync(dataPath)) {
     throw new Error(`Missing ${dataPath}`);
   }
-  if (!existsSync(gatePath)) {
-    throw new Error(`Missing gate ${gatePath}`);
+  if (!existsSync(join(outDir, "index.html"))) {
+    throw new Error(
+      `Missing gate ${join(outDir, "index.html")} — keep the password gate in worlding/`
+    );
   }
 
   const salt = webcrypto.getRandomValues(new Uint8Array(SALT_LEN));
@@ -140,8 +143,7 @@ export async function encryptWorlding(opts = {}) {
   const htmlEnc = await encryptBytes(key, readFileSync(htmlPath));
   const dataEnc = await encryptBytes(key, readFileSync(dataPath));
 
-  rmSync(outDir, { recursive: true, force: true });
-  const encDir = join(outDir, "enc");
+  rmSync(encDir, { recursive: true, force: true });
   mkdirSync(encDir, { recursive: true });
 
   const assets = {};
@@ -163,7 +165,7 @@ export async function encryptWorlding(opts = {}) {
   }
 
   writeFileSync(
-    join(outDir, "payload.json"),
+    payloadPath,
     JSON.stringify(
       {
         v: 2,
@@ -185,9 +187,8 @@ export async function encryptWorlding(opts = {}) {
     ) + "\n"
   );
 
-  cpSync(gatePath, join(outDir, "index.html"));
   console.log(
-    `Wrote ${outDir} (${Object.keys(assets).length} assets, encrypted)`
+    `Wrote ${payloadPath} (${Object.keys(assets).length} assets). Commit worlding/payload.json + worlding/enc/.`
   );
 }
 
